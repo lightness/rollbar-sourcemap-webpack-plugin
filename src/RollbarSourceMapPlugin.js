@@ -27,6 +27,8 @@ class RollbarSourceMapPlugin {
   }
 
   afterEmit(compilation, cb) {
+    console.log('>>>> >', compilation);
+
     const errors = validateOptions(this);
 
     if (errors) {
@@ -47,6 +49,7 @@ class RollbarSourceMapPlugin {
   }
 
   apply(compiler) {
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!');
     if (compiler.hooks) {
       compiler.hooks.afterEmit.tapAsync('after-emit', this.afterEmit.bind(this));
     } else {
@@ -55,6 +58,7 @@ class RollbarSourceMapPlugin {
   }
 
   getAssets(compilation) {
+    console.log('>>>> >>', compilation);
     const { includeChunks } = this;
     const { chunks } = compilation.getStats().toJson();
 
