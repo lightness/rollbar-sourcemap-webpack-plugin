@@ -71,8 +71,6 @@ var RollbarSourceMapPlugin = function () {
     value: function afterEmit(compilation, cb) {
       var _this = this;
 
-      console.log('>>>> >', compilation);
-
       var errors = (0, _helpers.validateOptions)(this);
 
       if (errors) {
@@ -100,7 +98,6 @@ var RollbarSourceMapPlugin = function () {
   }, {
     key: 'apply',
     value: function apply(compiler) {
-      console.log('!!!!!!!!!!!!!!!!!!!!!!!');
       if (compiler.hooks) {
         compiler.hooks.afterEmit.tapAsync('after-emit', this.afterEmit.bind(this));
       } else {
@@ -110,7 +107,6 @@ var RollbarSourceMapPlugin = function () {
   }, {
     key: 'getAssets',
     value: function getAssets(compilation) {
-      console.log('>>>> >>', compilation);
       var includeChunks = this.includeChunks;
 
       var _compilation$getStats = compilation.getStats().toJson(),
@@ -147,6 +143,14 @@ var RollbarSourceMapPlugin = function () {
       return this.publicPath(sourceFile);
     }
   }, {
+    key: 'getVersion',
+    value: function getVersion(compilation) {
+      var hash = compilation.getStats().hash;
+      var regex = /\[hash\]/g;
+
+      return this.version.replace(regex, hash);
+    }
+  }, {
     key: 'uploadSourceMap',
     value: function uploadSourceMap(compilation, _ref2, cb) {
       var _this2 = this;
@@ -179,7 +183,7 @@ var RollbarSourceMapPlugin = function () {
 
       var form = req.form();
       form.append('access_token', this.accessToken);
-      form.append('version', this.version);
+      form.append('version', this.getVersion(compilation));
       form.append('minified_url', this.getPublicPath(sourceFile));
       form.append('source_map', compilation.assets[sourceMap].source(), {
         filename: sourceMap,

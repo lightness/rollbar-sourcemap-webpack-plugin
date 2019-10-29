@@ -27,8 +27,6 @@ class RollbarSourceMapPlugin {
   }
 
   afterEmit(compilation, cb) {
-    console.log('>>>> >', compilation);
-
     const errors = validateOptions(this);
 
     if (errors) {
@@ -49,7 +47,6 @@ class RollbarSourceMapPlugin {
   }
 
   apply(compiler) {
-    console.log('!!!!!!!!!!!!!!!!!!!!!!!');
     if (compiler.hooks) {
       compiler.hooks.afterEmit.tapAsync('after-emit', this.afterEmit.bind(this));
     } else {
@@ -58,7 +55,6 @@ class RollbarSourceMapPlugin {
   }
 
   getAssets(compilation) {
-    console.log('>>>> >>', compilation);
     const { includeChunks } = this;
     const { chunks } = compilation.getStats().toJson();
 
@@ -89,6 +85,13 @@ class RollbarSourceMapPlugin {
     return this.publicPath(sourceFile);
   }
 
+  getVersion(compilation) {
+    const hash = compilation.getStats().hash;
+    const regex = /\[hash\]/g;
+
+    return this.version.replace(regex, hash);
+  }
+
   uploadSourceMap(compilation, { sourceFile, sourceMap }, cb) {
     const req = request.post(this.rollbarEndpoint, (err, res, body) => {
       if (!err && res.statusCode === 200) {
@@ -113,7 +116,7 @@ class RollbarSourceMapPlugin {
 
     const form = req.form();
     form.append('access_token', this.accessToken);
-    form.append('version', this.version);
+    form.append('version', this.getVersion(compilation));
     form.append('minified_url', this.getPublicPath(sourceFile));
     form.append('source_map', compilation.assets[sourceMap].source(), {
       filename: sourceMap,
